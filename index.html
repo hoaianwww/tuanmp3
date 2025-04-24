@@ -1,0 +1,76 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>MP3 Player</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      font-family: sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      margin: 0;
+      padding: 1rem;
+      background: #111;
+      color: #fff;
+    }
+    input, button {
+      font-size: 1rem;
+      padding: 0.5rem;
+      margin: 0.5rem;
+      width: 90%;
+      max-width: 500px;
+    }
+    audio {
+      margin-top: 2rem;
+    }
+  </style>
+</head>
+<body>
+  <h2>🎧 Web MP3 Player</h2>
+  <input id="jsonUrl" type="text" placeholder="Paste JSON config URL here" />
+  <button onclick="startPlayback()">▶️ Start</button>
+  <div id="status"></div>
+  <audio id="audio" controls style="display:none;"></audio>
+
+  <script>
+    let config = null;
+    let lastIndex = -1;
+
+    async function startPlayback() {
+      const url = document.getElementById("jsonUrl").value;
+      const status = document.getElementById("status");
+      try {
+        const res = await fetch(url);
+        config = await res.json();
+        status.innerText = "✅ Loaded config. Playing soon...";
+        playNext();
+      } catch (e) {
+        status.innerText = "❌ Failed to load JSON config";
+      }
+    }
+
+    function playNext() {
+      const audio = document.getElementById("audio");
+      const { files, delay_min, delay_max } = config;
+
+      let index;
+      do {
+        index = Math.floor(Math.random() * files.length);
+      } while (files.length > 1 && index === lastIndex);
+      lastIndex = index;
+
+      audio.src = files[index];
+      audio.style.display = 'block';
+      audio.play();
+
+      const delay = Math.random() * (delay_max - delay_min) + delay_min;
+      setTimeout(playNext, (audio.duration + delay) * 1000);
+    }
+  </script>
+</body>
+</html>
